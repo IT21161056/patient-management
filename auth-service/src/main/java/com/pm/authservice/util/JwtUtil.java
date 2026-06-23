@@ -1,10 +1,13 @@
 package com.pm.authservice.util;
 
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Base64;
@@ -76,5 +79,19 @@ public class JwtUtil {
                 // 3. Creates the signature using the secret
                 // 4. Combines everything with dots: "header.payload.signature"
                 // Returns a compact, URL-safe JWT string ready for transmission
+    }
+
+    public void validateToken(String token){
+        try{
+            Jwts.parser().verifyWith((SecretKey) secretKey)
+                    .build()
+                    .parseSignedClaims(token);
+        }
+        catch (SignatureException e){
+            throw new JwtException("Invalid JWT signature");
+        }
+        catch (JwtException e){
+            throw new JwtException("Invalid JWT");
+        }
     }
 }
