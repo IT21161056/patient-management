@@ -27,6 +27,46 @@ spring:
               filters:
                 - RewritePath=/api-docs/patients,/v3/api-docs
 
+            ## http://localhost:4004/auth/login
+            ## API GATEWAY -> http://auth-service:4005/login
+            - id: auth-service-route
+              # Unique identifier for this route
+              # Used for logging, metrics, and debugging purposes
+              # Helps identify which route is handling which request
+              uri: http://auth-service:4005
+              # Target destination where requests will be forwarded
+              # http://auth-service:4005 - internal Docker service name and port
+              # 'auth-service' is the container name in Docker Compose
+              # When running in Docker, service names act as internal DNS hostnames
+              # This means the gateway can find the auth-service within the Docker network
+              predicates:
+                - Path=/auth/**
+                # Predicate (condition) that must be true for this route to match
+                # Path=/auth/** means any request path starting with /auth/
+                # Examples that match:
+                #   - /auth/login
+                #   - /auth/register
+                #   - /auth/verify
+                #   - /auth/forgot-password
+                # The ** is a wildcard matching any sub-paths
+                # If request path doesn't start with /auth/, this route is ignored
+              filters:
+                - StripPrefix=1
+                # Filter that modifies the request before forwarding
+                # StripPrefix=1 removes the first segment from the request path
+                # This is important for proper routing to the backend service
+
+                # Example transformation:
+                # Incoming:  /auth/login
+                # After StripPrefix=1: /login
+                # So the auth-service receives: http://auth-service:4005/login
+
+                # Why this is needed:
+                # The gateway uses /auth/ prefix for routing decisions
+                # But the auth-service endpoints don't have /auth/ prefix
+                # Without stripping, auth-service would receive /auth/login (which doesn't exist)
+                # With stripping, it receives /login (which does exist)
+
 
 
 
