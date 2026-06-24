@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
-@RestController
+@RestController()
 public class AuthController {
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     private final AuthService authService;
